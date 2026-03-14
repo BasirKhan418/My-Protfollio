@@ -2,7 +2,6 @@
 
 import { navlinks } from "@/constants/navlinks";
 import { socials } from "@/constants/socials";
-import { isMobile } from "@/lib/utils";
 import { Navlink } from "@/types/navlink";
 import { IconLayoutSidebarRightCollapse } from "@tabler/icons-react";
 import { AnimatePresence, motion } from "framer-motion";
@@ -15,10 +14,13 @@ import { Badge } from "./Badge";
 import { Heading } from "./Heading";
 
 export const Sidebar = () => {
-  const [isSmallScreen, setIsSmallScreen] = useState(isMobile());
-  const [open, setOpen] = useState(!isMobile());
+  const [mounted, setMounted] = useState(false);
+  const [isSmallScreen, setIsSmallScreen] = useState(false);
+  const [open, setOpen] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
+
     const handleResize = () => {
       setIsSmallScreen(window.innerWidth < 1024);
     };
@@ -29,8 +31,27 @@ export const Sidebar = () => {
   }, []);
 
   useEffect(() => {
+    if (!mounted) return;
     setOpen(!isSmallScreen);
-  }, [isSmallScreen]);
+  }, [isSmallScreen, mounted]);
+
+  useEffect(() => {
+    if (!mounted) return;
+
+    if (isSmallScreen && open) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isSmallScreen, open, mounted]);
+
+  if (!mounted) {
+    return null;
+  }
 
   return (
     <>
@@ -46,7 +67,7 @@ export const Sidebar = () => {
                 transition={{ duration: 0.2 }}
                 aria-label="Close sidebar"
                 onClick={() => setOpen(false)}
-                className="fixed inset-0 bg-black/25 z-[90]"
+                className="fixed inset-0 bg-slate-900/45 backdrop-blur-[1px] z-[90]"
               />
             )}
 
@@ -56,7 +77,7 @@ export const Sidebar = () => {
               animate={{ x: 0, opacity: 1 }}
               transition={{ duration: 0.25, ease: "easeOut" }}
               exit={{ x: -260, opacity: 0.9 }}
-              className="px-4 md:px-5 z-[100] py-7 bg-white/85 border-r border-white/60 shadow-xl shadow-slate-900/10 w-[82vw] max-w-[18rem] lg:w-[16rem] fixed lg:relative inset-y-0 left-0 flex flex-col justify-between backdrop-blur-md"
+              className="px-4 md:px-5 z-[100] py-7 bg-white border-r border-white/60 shadow-xl shadow-slate-900/15 w-[86vw] max-w-[19rem] lg:w-[16rem] fixed lg:relative inset-y-0 left-0 h-[100dvh] lg:h-screen flex flex-col justify-between backdrop-blur-md"
             >
               <div className="flex-1 overflow-y-auto overflow-x-hidden pr-1">
                 <SidebarHeader />
